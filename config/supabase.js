@@ -1,8 +1,27 @@
-const { createClient } = require('@supabase/supabase-js')
+const { createClient } = require("@supabase/supabase-js");
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_KEY
-)
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
 
-module.exports = supabase
+let supabase;
+
+if (!supabaseUrl || !supabaseKey) {
+  console.error(
+    "ERROR: SUPABASE_URL or SUPABASE_KEY is missing in environment variables!",
+  );
+  // Create a proxy to prevent crash on boot, but throw error when used
+  supabase = new Proxy(
+    {},
+    {
+      get: function (target, prop) {
+        throw new Error(
+          "Supabase client is not initialized. Please set SUPABASE_URL and SUPABASE_KEY in environment variables.",
+        );
+      },
+    },
+  );
+} else {
+  supabase = createClient(supabaseUrl, supabaseKey);
+}
+
+module.exports = supabase;
